@@ -142,4 +142,39 @@ module Filter =
             && updatesChecker handlers update bot)
         |> Option.defaultValue false
 
+    let justText (text: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+        match isNull update.Message.Text with
+        | true -> false
+        | false ->
+            update.Message.Text = text
+            && updatesChecker handlers update bot
+
+    let callback (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+        match isNull update.CallbackQuery with
+        | true -> false
+        | false -> updatesChecker handlers update bot
+
+    let callbackData data (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+        match isNull update.CallbackQuery.Data with
+        | true -> false
+        | false ->
+            update.CallbackQuery.Data = data
+            && updatesChecker handlers update bot
+
+    let callbackScan
+        (format: PrintfFormat<_, _, _, _, 't>)
+        (handler: 't -> UpdateHandler list)
+        (bot: ITelegramBotClient) (update: Update)
+        =
+        match isNull update.CallbackQuery.Data with
+        | true -> false
+        | false ->
+            let scan text =
+                try Some (sscanf format text)
+                with _ -> None
+            update.CallbackQuery.Data
+            |> scan
+            |> Option.map (fun x ->
+                updatesChecker (handler x) update bot)
+            |> Option.defaultValue false
 
