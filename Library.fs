@@ -80,20 +80,7 @@ let inline runBot
 module Filter =
     open System.Text.RegularExpressions
     open Telefunc.Sscanf
-
-    let inline private isNull (x: 'T when 'T: not struct) = obj.ReferenceEquals(x, null)
-
-    let inline private nullableToOption x = if isNull x then None else Some x
-
-    type private MaybeNullable() =
-        member _.Bind(x, fn) =
-            match nullableToOption x with
-            | None -> None
-            | Some value -> fn value
-
-        member _.Return x = Some x
-
-    let private maybeNullable = MaybeNullable()
+    open Telefunc.State
 
     let private messageText (update: Update) =
         maybeNullable {
@@ -181,3 +168,20 @@ module Filter =
                 updatesChecker (handler x) update bot)
             |> Option.defaultValue false
 
+    let byState<'s when 's :> TelefuncState>
+        (handlers: (('s -> bool) * UpdateHandler list) list)
+        (bot: ITelegramBotClient)
+        (update: Update)
+        =
+        handlers
+        |> Seq.tryFind (fun (stateChecker, updHandler) ->
+            // let (stateChecker, updHandler) = hndlr
+            let st = maybe {
+                let! id = getId update
+                let! state = bot.State.get id
+                return stateChecker (state :?> 's)
+            }
+            st
+            |> Option.defaultValue false
+            && updatesChecker updHandler update bot)
+        |> Option.isSome
