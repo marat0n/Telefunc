@@ -5,8 +5,8 @@ The functional wrapping library of [Telegram.Bot](https://github.com/TelegramBot
 - 0.0.1 (we are here)
   - Starting point :)
 - 0.1
-  1. runBot function;
-  2. tree-like bot's handlers structure;
+  1. ✅ runBot function;
+  2. ✅ tree-like bot's handlers structure;
   3. basic wrapped functions for sending messages;
   4. states machine;
   5. helper function `getId: Update -> int64 option`.
