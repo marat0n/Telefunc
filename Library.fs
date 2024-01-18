@@ -122,4 +122,24 @@ module Filter =
                 false
         | None -> false
 
+    let message (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+        match isNull update.Message with
+        | true -> false
+        | false -> updatesChecker handlers update bot
+
+    let text (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+        match isNull update.Message.Text with
+        | true -> false
+        | false -> updatesChecker handlers update bot
+
+    let includeText (inclText: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+        maybeNullable {
+            let! text = update.Message.Text
+            return text.Contains(inclText)
+        }
+        |> Option.map (fun contains ->
+            contains
+            && updatesChecker handlers update bot)
+        |> Option.defaultValue false
+
 
