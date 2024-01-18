@@ -97,15 +97,14 @@ module Filter =
             return text
         }
 
+    let commandRegex = Regex(@"^\/[\S]+", RegexOptions.Compiled)
+
     let command (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match messageText update with
         | Some value ->
-            let rx = Regex(@"^\/[\S]+", RegexOptions.Compiled)
-
-            if rx.IsMatch value then
-                updatesChecker handlers update bot
-            else
-                false
+            if commandRegex.IsMatch value
+            then updatesChecker handlers update bot
+            else false
         | None -> false
 
     let commandName
@@ -116,10 +115,9 @@ module Filter =
         =
         match messageText update with
         | Some value ->
-            if $"/{name}" = value then
-                updatesChecker handlers update bot
-            else
-                false
+            if $"/{name}" = value
+            then updatesChecker handlers update bot
+            else false
         | None -> false
 
     let message (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
