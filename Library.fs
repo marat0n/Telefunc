@@ -71,3 +71,30 @@ let inline runBot
     printfn "Start listening for %s (%d)" me.Username me.Id
 
     onEnterLine cts.Cancel
+
+module Filter =
+    open System.Text.RegularExpressions
+    open Telefunc.Sscanf
+
+    let inline private isNull (x: 'T when 'T: not struct) = obj.ReferenceEquals(x, null)
+
+    let inline private nullableToOption x = if isNull x then None else Some x
+
+    type private MaybeNullable() =
+        member _.Bind(x, fn) =
+            match nullableToOption x with
+            | None -> None
+            | Some value -> fn value
+
+        member _.Return x = Some x
+
+    let private maybeNullable = MaybeNullable()
+
+    let private messageText (update: Update) =
+        maybeNullable {
+            let! message = update.Message
+            let! text = message.Text
+            return text
+        }
+
+
