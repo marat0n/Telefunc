@@ -7,19 +7,7 @@ open Telegram.Bot.Polling
 open System.Threading.Tasks
 open Telegram.Bot.Types.Enums
 open Telegram.Bot.Exceptions
-open System
-
-type UpdateHandler = delegate of ITelegramBotClient * Update -> bool
-
-let inline private awaitTask (task: Task) =
-    task |> Async.AwaitTask |> Async.RunSynchronously
-
-let inline private awaitTypedTask task =
-    task |> Async.AwaitTask |> Async.RunSynchronously
-
-let inline private onEnterLine fn =
-    Console.ReadLine() |> ignore
-    fn ()
+open Telefunc.Infrastructure
 
 let getId (update: Update) =
     match update.Type with
