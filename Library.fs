@@ -21,6 +21,23 @@ let inline private onEnterLine fn =
     Console.ReadLine() |> ignore
     fn ()
 
+let getId (update: Update) =
+    match update.Type with
+    | UpdateType.Message -> Some update.Message.Chat.Id
+    | UpdateType.InlineQuery -> Some update.InlineQuery.From.Id
+    | UpdateType.ChosenInlineResult -> Some update.ChosenInlineResult.From.Id
+    | UpdateType.CallbackQuery -> Some update.CallbackQuery.From.Id
+    | UpdateType.EditedMessage -> Some update.EditedMessage.Chat.Id
+    | UpdateType.ChannelPost -> Some update.ChannelPost.Chat.Id
+    | UpdateType.EditedChannelPost -> Some update.EditedChannelPost.Chat.Id
+    | UpdateType.ShippingQuery -> Some update.ShippingQuery.From.Id
+    | UpdateType.PreCheckoutQuery -> Some update.PreCheckoutQuery.From.Id
+    | UpdateType.PollAnswer -> Some update.PollAnswer.User.Id
+    | UpdateType.MyChatMember -> Some update.MyChatMember.Chat.Id
+    | UpdateType.ChatMember -> Some update.ChatMember.Chat.Id
+    | UpdateType.ChatJoinRequest -> Some update.ChatJoinRequest.Chat.Id
+    | _ -> None
+
 let inline newBot (token: string) = new TelegramBotClient(token)
 
 let inline private updatesChecker
