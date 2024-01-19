@@ -208,7 +208,7 @@ type Wrappers =
         (   bot: ITelegramBotClient,
             chatId: int64,
             text: string,
-            insteadOfMsg: int option,
+            ?insteadOfMsg: int,
             ?replyMarkup: IReplyMarkup
         ) : Message =
         match insteadOfMsg with

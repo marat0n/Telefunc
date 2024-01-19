@@ -4,6 +4,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="HelloWorld.fs" />
+    <Compile Include="HelloWorld.fsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Telefunc" Version="0.1.0" />
   </ItemGroup>
 </Project>
