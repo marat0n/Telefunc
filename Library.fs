@@ -1,4 +1,4 @@
-﻿module Telefunc
+﻿module Telefunc.Core
 
 open Telegram.Bot
 open Telegram.Bot.Types
@@ -93,7 +93,7 @@ module Filter =
     open Telefunc.Sscanf
     open Telefunc.State
 
-    let inline private messageText (update: Update) =
+    let inline messageText (update: Update) =
         maybeNullable {
             let! message = update.Message
             let! text = message.Text
