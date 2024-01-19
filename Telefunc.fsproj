@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Version>0.0.1</Version>
+    <Version>0.1.0</Version>
     <Description>The functional wrapping library of Telegram.Bot wrote in F#.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>Telefunc, Telegram, FSharpTelegram, F#, Functional Telegram</PackageTags>
