@@ -196,3 +196,37 @@ module Filter =
             |> Option.defaultValue false
             && updatesChecker updHandler update bot)
         |> Option.isSome
+
+
+(*-----------------------
+    Telefunc Wrappers
+-----------------------*)
+
+[<AbstractClass>]
+type Wrappers =
+    static member sendMessage
+        (   bot: ITelegramBotClient,
+            chatId: int64,
+            text: string,
+            insteadOfMsg: int option,
+            ?replyMarkup: IReplyMarkup
+        ) : Message =
+        match insteadOfMsg with
+        | Some msgId ->
+            bot.DeleteMessageAsync(
+                chatId = chatId,
+                messageId = msgId
+            ) |> awaitTask |> ignore
+            bot.SendTextMessageAsync(
+                chatId = chatId,
+                text = text,
+                parseMode = ParseMode.Html,
+                replyMarkup = defaultArg replyMarkup null
+            ) |> awaitTypedTask
+        | None -> 
+            bot.SendTextMessageAsync(
+                chatId = chatId,
+                text = text,
+                parseMode = ParseMode.Html,
+                replyMarkup = defaultArg replyMarkup null
+            ) |> awaitTypedTask
