@@ -8,8 +8,14 @@ open System.Threading.Tasks
 open Telegram.Bot.Types.Enums
 open Telegram.Bot.Exceptions
 open Telefunc.Infrastructure
+open Telegram.Bot.Types.ReplyMarkups
 
-let getId (update: Update) =
+
+(*-----------------------
+    Primary functions
+-----------------------*)
+
+let inline getId (update: Update) =
     match update.Type with
     | UpdateType.Message -> Some update.Message.Chat.Id
     | UpdateType.InlineQuery -> Some update.InlineQuery.From.Id
@@ -77,12 +83,17 @@ let inline runBot
 
     onEnterLine cts.Cancel
 
+
+(*-----------------------
+    Updates filtering
+-----------------------*)
+
 module Filter =
     open System.Text.RegularExpressions
     open Telefunc.Sscanf
     open Telefunc.State
 
-    let private messageText (update: Update) =
+    let inline private messageText (update: Update) =
         maybeNullable {
             let! message = update.Message
             let! text = message.Text
@@ -91,7 +102,7 @@ module Filter =
 
     let commandRegex = Regex(@"^\/[\S]+", RegexOptions.Compiled)
 
-    let command (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline command (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match messageText update with
         | Some value ->
             if commandRegex.IsMatch value
@@ -99,7 +110,7 @@ module Filter =
             else false
         | None -> false
 
-    let commandName
+    let inline commandName
         (name: string)
         (handlers: UpdateHandler list)
         (bot: ITelegramBotClient)
@@ -112,17 +123,17 @@ module Filter =
             else false
         | None -> false
 
-    let message (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline message (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.Message with
         | true -> false
         | false -> updatesChecker handlers update bot
 
-    let text (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline text (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.Message.Text with
         | true -> false
         | false -> updatesChecker handlers update bot
 
-    let includeText (inclText: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline includeText (inclText: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         maybeNullable {
             let! text = update.Message.Text
             return text.Contains(inclText)
@@ -132,26 +143,26 @@ module Filter =
             && updatesChecker handlers update bot)
         |> Option.defaultValue false
 
-    let justText (text: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline justText (text: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.Message.Text with
         | true -> false
         | false ->
             update.Message.Text = text
             && updatesChecker handlers update bot
 
-    let callback (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline callback (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.CallbackQuery with
         | true -> false
         | false -> updatesChecker handlers update bot
 
-    let callbackData data (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline callbackData data (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.CallbackQuery.Data with
         | true -> false
         | false ->
             update.CallbackQuery.Data = data
             && updatesChecker handlers update bot
 
-    let callbackScan
+    let inline callbackScan
         (format: PrintfFormat<_, _, _, _, 't>)
         (handler: 't -> UpdateHandler list)
         (bot: ITelegramBotClient) (update: Update)
@@ -168,7 +179,7 @@ module Filter =
                 updatesChecker (handler x) update bot)
             |> Option.defaultValue false
 
-    let byState<'s when 's :> TelefuncState>
+    let inline byState<'s when 's :> TelefuncState>
         (handlers: (('s -> bool) * UpdateHandler list) list)
         (bot: ITelegramBotClient)
         (update: Update)
