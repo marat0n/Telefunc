@@ -2,13 +2,13 @@
 
 open Telegram.Bot
 open Telegram.Bot.Types
-open System.Threading
 open Telegram.Bot.Polling
-open System.Threading.Tasks
-open Telegram.Bot.Types.Enums
 open Telegram.Bot.Exceptions
-open Telefunc.Infrastructure
+open Telegram.Bot.Types.Enums
 open Telegram.Bot.Types.ReplyMarkups
+open System.Threading
+open System.Threading.Tasks
+open Telefunc.Infrastructure
 
 
 (*-----------------------
@@ -93,47 +93,65 @@ module Filter =
     open Telefunc.Sscanf
     open Telefunc.State
 
-    let inline messageText (update: Update) =
+    let private commandRegex = Regex(@"^\/[\S]+", RegexOptions.Compiled)
+
+    let inline getMessageText (update: Update) =
         maybeNullable {
             let! message = update.Message
             let! text = message.Text
             return text
         }
 
-    let commandRegex = Regex(@"^\/[\S]+", RegexOptions.Compiled)
+    let inline private scan format text =
+        try Some (sscanf format text)
+        with _ -> None
 
-    let inline command (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
-        match messageText update with
-        | Some value ->
-            if commandRegex.IsMatch value
-            then updatesChecker handlers update bot
-            else false
+    let inline checkUpdateIsCommand (upd: Update) =
+        match getMessageText upd with
+        | Some value -> commandRegex.IsMatch value
         | None -> false
 
-    let inline commandName
+    let inline isCommand (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+        checkUpdateIsCommand update
+        && updatesChecker handlers update bot
+
+    let inline command
         (name: string)
         (handlers: UpdateHandler list)
         (bot: ITelegramBotClient)
         (update: Update)
         =
-        match messageText update with
+        match getMessageText update with
         | Some value ->
             if $"/{name}" = value
             then updatesChecker handlers update bot
             else false
         | None -> false
 
-    let inline message (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline commandScan
+        (format: PrintfFormat<_, _, _, _, 't>)
+        (handler: 't -> UpdateHandler list)
+        (bot: ITelegramBotClient) (update: Update)
+        =
+        checkUpdateIsCommand update
+        &&
+        update.Message.Text.Substring(1)
+        |> scan format
+        |> Option.map (fun x ->
+            updatesChecker (handler x) update bot)
+        |> Option.defaultValue false
+
+    let inline isMessage (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.Message with
         | true -> false
         | false -> updatesChecker handlers update bot
 
-    let inline text (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline hasMsgText (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.Message.Text with
         | true -> false
         | false -> updatesChecker handlers update bot
 
-    let inline includeText (inclText: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline hasIncludedText (inclText: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         maybeNullable {
             let! text = update.Message.Text
             return text.Contains(inclText)
@@ -143,14 +161,27 @@ module Filter =
             && updatesChecker handlers update bot)
         |> Option.defaultValue false
 
-    let inline justText (text: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline msgText (text: string) (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.Message.Text with
         | true -> false
         | false ->
             update.Message.Text = text
             && updatesChecker handlers update bot
+    
+    let inline messageScan
+        (format: PrintfFormat<_, _, _, _, 't>)
+        (handler: 't -> UpdateHandler list)
+        (bot: ITelegramBotClient) (update: Update)
+        =
+        maybe {
+            let! text = getMessageText update
+            return!
+                scan format text
+                |> Option.map (fun x ->
+                    updatesChecker (handler x) update bot)
+        } |> Option.defaultValue false
 
-    let inline callback (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
+    let inline isCallback (handlers: UpdateHandler list) (bot: ITelegramBotClient) (update: Update) =
         match isNull update.CallbackQuery with
         | true -> false
         | false -> updatesChecker handlers update bot
