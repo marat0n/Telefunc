@@ -41,7 +41,7 @@ let help (bot: ITelegramBotClient) (update: Update) =
     true
 
 runBot
-    "1062959848:AAFEYlO7Vic24sWFtt1vWem8BPX_s7Li284"
+    "YOUR TOKEN"
     [
         Filter.command [
             Filter.commandName "start" [ sayHelloWorld ]
