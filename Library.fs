@@ -93,7 +93,7 @@ module Filter =
     open Telefunc.Sscanf
     open Telefunc.State
 
-    let private commandRegex = Regex(@"^\/[\S]+", RegexOptions.Compiled)
+    let commandRegex = Regex(@"^\/[\S]+", RegexOptions.Compiled)
 
     let inline getMessageText (update: Update) =
         maybeNullable {
