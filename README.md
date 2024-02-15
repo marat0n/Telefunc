@@ -11,7 +11,7 @@ The functional wrapping library of [Telegram.Bot](https://github.com/TelegramBot
   4. ✅ states machine;
   5. ✅ helper function `getId: Update -> int64 option`.
 - 0.2
-  1. more updates-filtering functions for handlers;
+  1. ✅ more updates-filtering functions for handlers;
   2. more Telegram.Bot wrapped functions and types.
 - 0.3
   1. more comfortable state-machine mechanism;
